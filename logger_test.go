@@ -11,6 +11,9 @@ func TestLogger(t *testing.T) {
 	assert.Equal(t, "helloworld", fmt.Sprint("hello", "world"))
 	logger := DefaultLogger
 
+	logger.Printf("hello %s", "world")
+	logger.Println("hello", "world")
+
 	logger.Info("hello", "world")
 	logger.Warn("hello", "world", "test")
 	logger.Error("hello", "world", "test")

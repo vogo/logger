@@ -18,6 +18,9 @@ type Logger interface {
 	Warnf(format string, args ...interface{})
 	Errorf(format string, args ...interface{})
 	Debugf(format string, args ...interface{})
+
+	Printf(format string, args ...interface{})
+	Println(args ...interface{})
 }
 
 // DefaultLogger uses the stdlib log package for logging.
@@ -54,4 +57,12 @@ func (defaultLogger) Errorf(format string, args ...interface{}) {
 }
 func (defaultLogger) Debugf(format string, args ...interface{}) {
 	p("DEBUG", fmt.Sprintf(format, args...))
+}
+
+func (defaultLogger) Printf(format string, args ...interface{}) {
+	p("INFO", fmt.Sprintf(format, args...))
+}
+
+func (defaultLogger) Println(args ...interface{}) {
+	p("INFO", fmt.Sprint(args...))
 }
