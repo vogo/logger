@@ -37,7 +37,7 @@ func TestLog(t *testing.T) {
 }
 
 func TestSetWriter(t *testing.T) {
-	logFile := "/tmp/test_golang_logger.writeLog"
+	logFile := "/tmp/test_golang_logger.WriteLog"
 	defer os.Remove(logFile)
 
 	SetOutput(&lumberjack.Logger{
@@ -51,7 +51,7 @@ func TestSetWriter(t *testing.T) {
 
 	data, _ := ioutil.ReadFile(logFile)
 	if !bytes.HasSuffix(data, []byte("hello\n")) {
-		t.Errorf("unexpect writeLog data: %s", data)
+		t.Errorf("unexpect WriteLog data: %s", data)
 	}
 }
 

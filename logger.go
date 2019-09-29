@@ -58,43 +58,48 @@ func SetFlags(f int) {
 	flag = f
 }
 
+// Writer return the logger writer
+func Writer() io.Writer {
+	return output
+}
+
 func Trace(a ...interface{}) {
 	if level < LevelTrace {
 		return
 	}
-	writeLog(trace, fmt.Sprint(a...))
+	WriteLog(trace, fmt.Sprint(a...))
 }
 
 func Debug(a ...interface{}) {
 	if level < LevelDebug {
 		return
 	}
-	writeLog(debug, fmt.Sprint(a...))
+	WriteLog(debug, fmt.Sprint(a...))
 }
 
 func Info(a ...interface{}) {
 	if level < LevelInfo {
 		return
 	}
-	writeLog(info, fmt.Sprint(a...))
+	WriteLog(info, fmt.Sprint(a...))
 }
 
 func Warn(a ...interface{}) {
 	if level < LevelWarn {
 		return
 	}
-	writeLog(warn, fmt.Sprint(a...))
+	WriteLog(warn, fmt.Sprint(a...))
 }
 
 func Error(a ...interface{}) {
 	if level < LevelError {
 		return
 	}
-	writeLog(error, fmt.Sprint(a...))
+	WriteLog(error, fmt.Sprint(a...))
 }
 
 func Fatal(a ...interface{}) {
-	writeLog(fatal, fmt.Sprint(a...))
+	WriteLog(fatal, fmt.Sprint(a...))
 	os.Exit(1)
 }
 
@@ -102,43 +107,79 @@ func Tracef(format string, a ...interface{}) {
 	if level < LevelTrace {
 		return
 	}
-	writeLog(trace, fmt.Sprintf(format, a...))
+	WriteLog(trace, fmt.Sprintf(format, a...))
 }
 
 func Debugf(format string, a ...interface{}) {
 	if level < LevelDebug {
 		return
 	}
-	writeLog(debug, fmt.Sprintf(format, a...))
+	WriteLog(debug, fmt.Sprintf(format, a...))
 }
 
 func Infof(format string, a ...interface{}) {
 	if level < LevelInfo {
 		return
 	}
-	writeLog(info, fmt.Sprintf(format, a...))
+	WriteLog(info, fmt.Sprintf(format, a...))
 }
 
 func Warnf(format string, a ...interface{}) {
 	if level < LevelWarn {
 		return
 	}
-	writeLog(warn, fmt.Sprintf(format, a...))
+	WriteLog(warn, fmt.Sprintf(format, a...))
 }
 
 func Errorf(format string, a ...interface{}) {
 	if level < LevelError {
 		return
 	}
-	writeLog(error, fmt.Sprintf(format, a...))
+	WriteLog(error, fmt.Sprintf(format, a...))
 }
 
 func Fatalf(format string, a ...interface{}) {
-	writeLog(fatal, fmt.Sprintf(format, a...))
+	WriteLog(fatal, fmt.Sprintf(format, a...))
 	os.Exit(1)
 }
 
-func writeLog(level, s string) {
+func Fatalln(a ...interface{}) {
+	WriteLog(fatal, fmt.Sprint(a...))
+	os.Exit(1)
+}
+
+func Print(a ...interface{}) {
+	WriteLog(fatal, fmt.Sprint(a...))
+}
+
+func Printf(format string, a ...interface{}) {
+	WriteLog(fatal, fmt.Sprintf(format, a...))
+}
+
+func Println(format string, a ...interface{}) {
+	WriteLog(fatal, fmt.Sprintf(format, a...))
+}
+
+func Panic(a ...interface{}) {
+	s := fmt.Sprint(a...)
+	WriteLog(fatal, s)
+	panic(s)
+}
+
+func Panicf(format string, a ...interface{}) {
+	s := fmt.Sprintf(format, a...)
+	WriteLog(fatal, s)
+	panic(s)
+}
+
+func Panicln(a ...interface{}) {
+	s := fmt.Sprint(a...)
+	WriteLog(fatal, s)
+	panic(s)
+}
+
+// WriteLog write log data
+func WriteLog(level, s string) {
 	lock.Lock()
 	defer lock.Unlock()
 
