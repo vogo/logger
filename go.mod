@@ -1,4 +1,4 @@
-module github.com/wongoo/logger
+module github.com/vogo/logger
 
 go 1.13
 
