@@ -13,12 +13,14 @@ import (
 )
 
 const (
-	trace = "TRAC"
-	debug = "DEBG"
-	info  = "INFO"
-	warn  = "WARN"
-	error = "ERRO"
-	fatal = "FATL"
+	TagTrace = "TRAC"
+	TagDebug = "DEBG"
+	TagInfo  = "INFO"
+	TagWarn  = "WARN"
+	TagError = "ERRO"
+	TagFatal = "FATL"
+	TagPanic = "PNIC"
+	TagPrint = "PRNT"
 
 	LevelTrace = 5
 	LevelDebug = 4
@@ -67,123 +69,122 @@ func Trace(a ...interface{}) {
 	if level < LevelTrace {
 		return
 	}
-	WriteLog(trace, fmt.Sprint(a...))
+	WriteLog(TagTrace, fmt.Sprint(a...))
 }
 
 func Debug(a ...interface{}) {
 	if level < LevelDebug {
 		return
 	}
-	WriteLog(debug, fmt.Sprint(a...))
+	WriteLog(TagDebug, fmt.Sprint(a...))
 }
 
 func Info(a ...interface{}) {
 	if level < LevelInfo {
 		return
 	}
-	WriteLog(info, fmt.Sprint(a...))
+	WriteLog(TagInfo, fmt.Sprint(a...))
 }
 
 func Warn(a ...interface{}) {
 	if level < LevelWarn {
 		return
 	}
-	WriteLog(warn, fmt.Sprint(a...))
+	WriteLog(TagWarn, fmt.Sprint(a...))
 }
 
 func Error(a ...interface{}) {
 	if level < LevelError {
 		return
 	}
-	WriteLog(error, fmt.Sprint(a...))
-}
-
-func Fatal(a ...interface{}) {
-	WriteLog(fatal, fmt.Sprint(a...))
-	os.Exit(1)
+	WriteLog(TagError, fmt.Sprint(a...))
 }
 
 func Tracef(format string, a ...interface{}) {
 	if level < LevelTrace {
 		return
 	}
-	WriteLog(trace, fmt.Sprintf(format, a...))
+	WriteLog(TagTrace, fmt.Sprintf(format, a...))
 }
 
 func Debugf(format string, a ...interface{}) {
 	if level < LevelDebug {
 		return
 	}
-	WriteLog(debug, fmt.Sprintf(format, a...))
+	WriteLog(TagDebug, fmt.Sprintf(format, a...))
 }
 
 func Infof(format string, a ...interface{}) {
 	if level < LevelInfo {
 		return
 	}
-	WriteLog(info, fmt.Sprintf(format, a...))
+	WriteLog(TagInfo, fmt.Sprintf(format, a...))
 }
 
 func Warnf(format string, a ...interface{}) {
 	if level < LevelWarn {
 		return
 	}
-	WriteLog(warn, fmt.Sprintf(format, a...))
+	WriteLog(TagWarn, fmt.Sprintf(format, a...))
 }
 
 func Errorf(format string, a ...interface{}) {
 	if level < LevelError {
 		return
 	}
-	WriteLog(error, fmt.Sprintf(format, a...))
+	WriteLog(TagError, fmt.Sprintf(format, a...))
+}
+
+func Fatal(a ...interface{}) {
+	WriteLog(TagFatal, fmt.Sprint(a...))
+	os.Exit(1)
 }
 
 func Fatalf(format string, a ...interface{}) {
-	WriteLog(fatal, fmt.Sprintf(format, a...))
+	WriteLog(TagFatal, fmt.Sprintf(format, a...))
 	os.Exit(1)
 }
 
 func Fatalln(a ...interface{}) {
-	WriteLog(fatal, fmt.Sprint(a...))
+	WriteLog(TagFatal, fmt.Sprint(a...))
 	os.Exit(1)
 }
 
 func Print(a ...interface{}) {
-	WriteLog(fatal, fmt.Sprint(a...))
+	WriteLog(TagPrint, fmt.Sprint(a...))
 }
 
 func Printf(format string, a ...interface{}) {
-	WriteLog(fatal, fmt.Sprintf(format, a...))
+	WriteLog(TagPrint, fmt.Sprintf(format, a...))
 }
 
 func Println(format string, a ...interface{}) {
-	WriteLog(fatal, fmt.Sprintf(format, a...))
+	WriteLog(TagPrint, fmt.Sprintf(format, a...))
 }
 
 func Panic(a ...interface{}) {
 	s := fmt.Sprint(a...)
-	WriteLog(fatal, s)
+	WriteLog(TagPanic, s)
 	panic(s)
 }
 
 func Panicf(format string, a ...interface{}) {
 	s := fmt.Sprintf(format, a...)
-	WriteLog(fatal, s)
+	WriteLog(TagPanic, s)
 	panic(s)
 }
 
 func Panicln(a ...interface{}) {
 	s := fmt.Sprint(a...)
-	WriteLog(fatal, s)
+	WriteLog(TagPanic, s)
 	panic(s)
 }
 
 // WriteLog write log data
-func WriteLog(level, s string) {
-	lock.Lock()
-	defer lock.Unlock()
-
+func WriteLog(tag, s string) {
 	t := time.Now()
+
+	lock.Lock()
 	buf = buf[:0]
 
 	year, month, day := t.Date()
@@ -204,7 +205,7 @@ func WriteLog(level, s string) {
 	appendNumber(&buf, t.Nanosecond()/1e6, 3)
 
 	buf = append(buf, ' ')
-	buf = append(buf, level...)
+	buf = append(buf, tag...)
 
 	if flag&Lfile != 0 {
 		buf = append(buf, ' ', '[')
@@ -246,7 +247,10 @@ func WriteLog(level, s string) {
 	if s == "" || s[len(s)-1] != '\n' {
 		buf = append(buf, '\n')
 	}
+
 	_, _ = output.Write(buf)
+
+	lock.Unlock()
 }
 
 // Cheap integer to fixed-width decimal ASCII. Give a negative width to avoid zero-padding.
