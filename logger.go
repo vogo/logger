@@ -182,7 +182,37 @@ func Panicln(a ...interface{}) {
 
 // WriteLog write log data
 func WriteLog(tag, s string) {
+	var (
+		pc       uintptr
+		fileName string
+		funcName string
+		line     int
+		callerOk bool
+	)
+
 	t := time.Now()
+
+	if flag&Lfile != 0 {
+		pc, fileName, line, callerOk = runtime.Caller(2)
+		if callerOk {
+			for i := len(fileName) - 1; i > 0; i-- {
+				if fileName[i] == '/' {
+					fileName = fileName[i+1:]
+					break
+				}
+			}
+			if flag&Lfunc != 0 {
+				funcName = runtime.FuncForPC(pc).Name() // main.(*MyStruct).foo
+
+				for i := len(funcName) - 1; i > 0; i-- {
+					if funcName[i] == '.' {
+						funcName = funcName[i+1:]
+						break
+					}
+				}
+			}
+		}
+	}
 
 	lock.Lock()
 	buf = buf[:0]
@@ -209,30 +239,12 @@ func WriteLog(tag, s string) {
 
 	if flag&Lfile != 0 {
 		buf = append(buf, ' ', '[')
-		pc, filename, line, ok := runtime.Caller(2)
-		if ok {
-			for i := len(filename) - 1; i > 0; i-- {
-				if filename[i] == '/' {
-					filename = filename[i+1:]
-					break
-				}
-			}
-
-			buf = append(buf, filename...)
-
+		if callerOk {
+			buf = append(buf, fileName...)
 			if flag&Lfunc != 0 {
 				buf = append(buf, ':')
-				funcName := runtime.FuncForPC(pc).Name() // main.(*MyStruct).foo
-
-				for i := len(funcName) - 1; i > 0; i-- {
-					if funcName[i] == '.' {
-						funcName = funcName[i+1:]
-						break
-					}
-				}
 				buf = append(buf, funcName...)
 			}
-
 			buf = append(buf, ':')
 			appendNumber(&buf, line, -1)
 		} else {

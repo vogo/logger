@@ -69,37 +69,39 @@ func BenchmarkInfo(b *testing.B) {
 	}
 }
 
-func BenchmarkInfoWithCaller(b *testing.B) {
-	SetOutput(ioutil.Discard)
-	SetFlags(Lfile)
-	for i := 0; i < b.N; i++ {
-		Info("hello world")
-	}
-}
-
-func BenchmarkInfof(b *testing.B) {
-	SetOutput(ioutil.Discard)
-	SetFlags(Lnone)
-	for i := 0; i < b.N; i++ {
-		Infof("%s %s", "hello", "world")
-	}
-}
-
-func BenchmarkInfofWithCaller(b *testing.B) {
-	SetOutput(ioutil.Discard)
-	SetFlags(Lfile)
-	for i := 0; i < b.N; i++ {
-		Infof("%s %s", "hello", "world")
-	}
-}
-
-// -------------- internal log ----------------------
-
 func BenchmarkLogPrintln(b *testing.B) {
 	log.SetOutput(ioutil.Discard)
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 	for i := 0; i < b.N; i++ {
 		log.Println("hello world")
+	}
+}
+
+func BenchmarkInfoParallel(b *testing.B) {
+	SetOutput(ioutil.Discard)
+	SetFlags(Lnone)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Info("hello world")
+		}
+	})
+}
+
+func BenchmarkLogPrintlnParallel(b *testing.B) {
+	log.SetOutput(ioutil.Discard)
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.Println("hello world")
+		}
+	})
+}
+
+func BenchmarkInfoWithCaller(b *testing.B) {
+	SetOutput(ioutil.Discard)
+	SetFlags(Lfile)
+	for i := 0; i < b.N; i++ {
+		Info("hello world")
 	}
 }
 
@@ -111,11 +113,27 @@ func BenchmarkLogPrintlnCaller(b *testing.B) {
 	}
 }
 
+func BenchmarkInfof(b *testing.B) {
+	SetOutput(ioutil.Discard)
+	SetFlags(Lnone)
+	for i := 0; i < b.N; i++ {
+		Infof("%s %s", "hello", "world")
+	}
+}
+
 func BenchmarkLogPrintf(b *testing.B) {
 	log.SetOutput(ioutil.Discard)
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 	for i := 0; i < b.N; i++ {
 		log.Printf("%s %s", "hello", "world")
+	}
+}
+
+func BenchmarkInfofWithCaller(b *testing.B) {
+	SetOutput(ioutil.Discard)
+	SetFlags(Lfile)
+	for i := 0; i < b.N; i++ {
+		Infof("%s %s", "hello", "world")
 	}
 }
 
