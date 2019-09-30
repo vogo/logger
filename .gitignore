@@ -12,3 +12,8 @@
 *.out
 
 .idea
+
+*.cpu
+*.mem
+*.prof
+*.test

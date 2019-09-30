@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -41,7 +42,6 @@ var (
 	level            = LevelInfo
 	output io.Writer = os.Stdout
 	lock   sync.Mutex
-	buf    []byte
 	flag   int
 )
 
@@ -180,6 +180,29 @@ func Panicln(a ...interface{}) {
 	panic(s)
 }
 
+var (
+	poolSize      int32 = 128
+	poolIndex     int32 = -1
+	poolBuffers         = make([][]byte, poolSize)
+	poolFlag            = make([]int32, poolSize)
+	defaultBuffer []byte
+)
+
+// SetPoolSize set pool size
+func SetPoolSize(size int) {
+	switch {
+	case int32(size) == poolSize:
+		return
+	case int32(size) > poolSize:
+		poolBuffers = make([][]byte, size)
+		poolFlag = make([]int32, size)
+		poolSize = int32(cap(poolBuffers))
+	case int32(size) < poolSize:
+		poolSize = int32(size)
+		// shrink pool not change the buffer size
+	}
+}
+
 // WriteLog write log data
 func WriteLog(tag, s string) {
 	var (
@@ -187,35 +210,23 @@ func WriteLog(tag, s string) {
 		fileName string
 		funcName string
 		line     int
+		index    int32
 		callerOk bool
+		poolOK   bool
+		buf      []byte
 	)
 
 	t := time.Now()
 
-	if flag&Lfile != 0 {
-		pc, fileName, line, callerOk = runtime.Caller(2)
-		if callerOk {
-			for i := len(fileName) - 1; i > 0; i-- {
-				if fileName[i] == '/' {
-					fileName = fileName[i+1:]
-					break
-				}
-			}
-			if flag&Lfunc != 0 {
-				funcName = runtime.FuncForPC(pc).Name() // main.(*MyStruct).foo
+	index = atomic.AddInt32(&poolIndex, 1) % poolSize
+	poolOK = atomic.CompareAndSwapInt32(&poolFlag[index], 0, 1)
 
-				for i := len(funcName) - 1; i > 0; i-- {
-					if funcName[i] == '.' {
-						funcName = funcName[i+1:]
-						break
-					}
-				}
-			}
-		}
+	if poolOK {
+		buf = poolBuffers[index][:0]
+	} else {
+		lock.Lock()
+		buf = defaultBuffer[:0]
 	}
-
-	lock.Lock()
-	buf = buf[:0]
 
 	year, month, day := t.Date()
 	appendNumber(&buf, year, 4)
@@ -239,9 +250,25 @@ func WriteLog(tag, s string) {
 
 	if flag&Lfile != 0 {
 		buf = append(buf, ' ', '[')
+		pc, fileName, line, callerOk = runtime.Caller(2)
 		if callerOk {
+			for i := len(fileName) - 1; i > 0; i-- {
+				if fileName[i] == '/' {
+					fileName = fileName[i+1:]
+					break
+				}
+			}
 			buf = append(buf, fileName...)
 			if flag&Lfunc != 0 {
+				funcName = runtime.FuncForPC(pc).Name() // main.(*MyStruct).foo
+
+				for i := len(funcName) - 1; i > 0; i-- {
+					if funcName[i] == '.' {
+						funcName = funcName[i+1:]
+						break
+					}
+				}
+
 				buf = append(buf, ':')
 				buf = append(buf, funcName...)
 			}
@@ -260,9 +287,17 @@ func WriteLog(tag, s string) {
 		buf = append(buf, '\n')
 	}
 
+	if poolOK {
+		lock.Lock()
+	}
+
 	_, _ = output.Write(buf)
 
 	lock.Unlock()
+
+	if poolOK {
+		atomic.StoreInt32(&poolFlag[index], 0)
+	}
 }
 
 // Cheap integer to fixed-width decimal ASCII. Give a negative width to avoid zero-padding.
