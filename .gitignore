@@ -17,3 +17,5 @@
 *.mem
 *.prof
 *.test
+
+loggerprof/loggerprof
