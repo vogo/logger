@@ -49,6 +49,11 @@ func TestSetWriter(t *testing.T) {
 	}
 }
 
+func TestSetPoolSize(t *testing.T) {
+	SetPoolSize(512)
+	SetPoolSize(128)
+}
+
 func TestTimeFormat(t *testing.T) {
 	now := time.Now()
 	fmt.Println(now.Format("20060102 15:04:05.999"))

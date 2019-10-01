@@ -189,18 +189,21 @@ var (
 )
 
 // SetPoolSize set pool size
-func SetPoolSize(size int) {
-	switch {
-	case int32(size) == poolSize:
+func SetPoolSize(s int) {
+	size := int32(s)
+
+	if size == poolSize {
 		return
-	case int32(size) > poolSize:
-		poolBuffers = make([][]byte, size)
-		poolFlag = make([]int32, size)
-		poolSize = int32(cap(poolBuffers))
-	case int32(size) < poolSize:
-		poolSize = int32(size)
-		// shrink pool not change the buffer size
 	}
+
+	if size < poolSize {
+		fmt.Println("not support to shrink logger buffer pool size")
+		return
+	}
+
+	poolBuffers = make([][]byte, size)
+	poolFlag = make([]int32, size)
+	poolSize = int32(cap(poolBuffers))
 }
 
 // WriteLog write log data

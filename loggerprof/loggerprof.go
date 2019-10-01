@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/vogo/logger"
 	"io/ioutil"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
+
+	"github.com/vogo/logger"
 )
 
 func main() {
