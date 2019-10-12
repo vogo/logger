@@ -39,15 +39,16 @@ const (
 )
 
 var (
-	level            = LevelInfo
+	Level            = LevelInfo
 	output io.Writer = os.Stdout
 	lock   sync.Mutex
 	flag   int
 )
 
-// SetLevel set logger level
+// SetLevel set logger Level
+// the Level variable is exported and can be set directly.
 func SetLevel(l int) {
-	level = l
+	Level = l
 }
 
 // SetOutput set logger output writer
@@ -66,70 +67,70 @@ func Writer() io.Writer {
 }
 
 func Trace(a ...interface{}) {
-	if level < LevelTrace {
+	if Level < LevelTrace {
 		return
 	}
 	WriteLog(TagTrace, fmt.Sprint(a...))
 }
 
 func Debug(a ...interface{}) {
-	if level < LevelDebug {
+	if Level < LevelDebug {
 		return
 	}
 	WriteLog(TagDebug, fmt.Sprint(a...))
 }
 
 func Info(a ...interface{}) {
-	if level < LevelInfo {
+	if Level < LevelInfo {
 		return
 	}
 	WriteLog(TagInfo, fmt.Sprint(a...))
 }
 
 func Warn(a ...interface{}) {
-	if level < LevelWarn {
+	if Level < LevelWarn {
 		return
 	}
 	WriteLog(TagWarn, fmt.Sprint(a...))
 }
 
 func Error(a ...interface{}) {
-	if level < LevelError {
+	if Level < LevelError {
 		return
 	}
 	WriteLog(TagError, fmt.Sprint(a...))
 }
 
 func Tracef(format string, a ...interface{}) {
-	if level < LevelTrace {
+	if Level < LevelTrace {
 		return
 	}
 	WriteLog(TagTrace, fmt.Sprintf(format, a...))
 }
 
 func Debugf(format string, a ...interface{}) {
-	if level < LevelDebug {
+	if Level < LevelDebug {
 		return
 	}
 	WriteLog(TagDebug, fmt.Sprintf(format, a...))
 }
 
 func Infof(format string, a ...interface{}) {
-	if level < LevelInfo {
+	if Level < LevelInfo {
 		return
 	}
 	WriteLog(TagInfo, fmt.Sprintf(format, a...))
 }
 
 func Warnf(format string, a ...interface{}) {
-	if level < LevelWarn {
+	if Level < LevelWarn {
 		return
 	}
 	WriteLog(TagWarn, fmt.Sprintf(format, a...))
 }
 
 func Errorf(format string, a ...interface{}) {
-	if level < LevelError {
+	if Level < LevelError {
 		return
 	}
 	WriteLog(TagError, fmt.Sprintf(format, a...))
