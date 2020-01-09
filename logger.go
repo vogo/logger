@@ -9,7 +9,6 @@ import (
 	"os"
 	"runtime"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
@@ -41,7 +40,6 @@ const (
 var (
 	Level            = LevelInfo
 	output io.Writer = os.Stdout
-	lock   sync.Mutex
 	flag   int
 )
 
@@ -182,30 +180,11 @@ func Panicln(a ...interface{}) {
 }
 
 var (
-	poolSize      int32 = 128
-	poolIndex     int32 = -1
-	poolBuffers         = make([][]byte, poolSize)
-	poolFlag            = make([]int32, poolSize)
-	defaultBuffer []byte
+	bytesPool = sync.Pool{New: func() interface{} {
+		b := make([]byte, 1024)
+		return &b
+	}}
 )
-
-// SetPoolSize set pool size
-func SetPoolSize(s int) {
-	size := int32(s)
-
-	if size == poolSize {
-		return
-	}
-
-	if size < poolSize {
-		fmt.Println("not support to shrink logger buffer pool size")
-		return
-	}
-
-	poolBuffers = make([][]byte, size)
-	poolFlag = make([]int32, size)
-	poolSize = int32(cap(poolBuffers))
-}
 
 // WriteLog write log data
 func WriteLog(tag, s string) {
@@ -214,23 +193,13 @@ func WriteLog(tag, s string) {
 		fileName string
 		funcName string
 		line     int
-		index    int32
 		callerOk bool
-		poolOK   bool
 		buf      []byte
 	)
 
 	t := time.Now()
 
-	index = atomic.AddInt32(&poolIndex, 1) % poolSize
-	poolOK = atomic.CompareAndSwapInt32(&poolFlag[index], 0, 1)
-
-	if poolOK {
-		buf = poolBuffers[index][:0]
-	} else {
-		lock.Lock()
-		buf = defaultBuffer[:0]
-	}
+	buf = (*(bytesPool.Get().(*[]byte)))[:0]
 
 	year, month, day := t.Date()
 	appendNumber(&buf, year, 4)
@@ -291,17 +260,9 @@ func WriteLog(tag, s string) {
 		buf = append(buf, '\n')
 	}
 
-	if poolOK {
-		lock.Lock()
-	}
-
 	_, _ = output.Write(buf)
 
-	lock.Unlock()
-
-	if poolOK {
-		atomic.StoreInt32(&poolFlag[index], 0)
-	}
+	bytesPool.Put(&buf)
 }
 
 // Cheap integer to fixed-width decimal ASCII. Give a negative width to avoid zero-padding.
