@@ -10,8 +10,6 @@ import (
 	"os"
 	"testing"
 	"time"
-
-	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func TestLogger(t *testing.T) {
@@ -31,15 +29,12 @@ func TestLogger(t *testing.T) {
 }
 
 func TestSetWriter(t *testing.T) {
-	logFile := "/tmp/test_golang_logger.WriteLog"
+	logFile := os.TempDir() + "/test_golang_logger.WriteLog"
 	defer os.Remove(logFile)
 
-	SetOutput(&lumberjack.Logger{
-		Filename:   logFile,
-		MaxSize:    10, // megabytes after which new file is created
-		MaxBackups: 10, // number of backups
-		MaxAge:     30, // days
-	})
+	f, _ := os.Create(logFile)
+
+	SetOutput(f)
 
 	Info("hello")
 
