@@ -6,7 +6,7 @@ package logger
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 	"time"
@@ -38,7 +38,7 @@ func TestSetWriter(t *testing.T) {
 
 	Info("hello")
 
-	data, _ := ioutil.ReadFile(logFile)
+	data, _ := os.ReadFile(logFile)
 	if !bytes.HasSuffix(data, []byte("hello\n")) {
 		t.Errorf("unexpect WriteLog data: %s", data)
 	}
@@ -51,7 +51,7 @@ func TestTimeFormat(t *testing.T) {
 }
 
 func BenchmarkInfo(b *testing.B) {
-	SetOutput(ioutil.Discard)
+	SetOutput(io.Discard)
 	SetFlags(Lnone)
 	for i := 0; i < b.N; i++ {
 		Info("hello world")
@@ -59,7 +59,7 @@ func BenchmarkInfo(b *testing.B) {
 }
 
 func BenchmarkInfoParallel(b *testing.B) {
-	SetOutput(ioutil.Discard)
+	SetOutput(io.Discard)
 	SetFlags(Lnone)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
@@ -69,7 +69,7 @@ func BenchmarkInfoParallel(b *testing.B) {
 }
 
 func BenchmarkInfoWithCaller(b *testing.B) {
-	SetOutput(ioutil.Discard)
+	SetOutput(io.Discard)
 	SetFlags(Lfile)
 	for i := 0; i < b.N; i++ {
 		Info("hello world")
@@ -77,7 +77,7 @@ func BenchmarkInfoWithCaller(b *testing.B) {
 }
 
 func BenchmarkInfof(b *testing.B) {
-	SetOutput(ioutil.Discard)
+	SetOutput(io.Discard)
 	SetFlags(Lnone)
 	for i := 0; i < b.N; i++ {
 		Infof("%s %s", "hello", "world")
@@ -85,7 +85,7 @@ func BenchmarkInfof(b *testing.B) {
 }
 
 func BenchmarkInfofWithCaller(b *testing.B) {
-	SetOutput(ioutil.Discard)
+	SetOutput(io.Discard)
 	SetFlags(Lfile)
 	for i := 0; i < b.N; i++ {
 		Infof("%s %s", "hello", "world")
@@ -93,7 +93,7 @@ func BenchmarkInfofWithCaller(b *testing.B) {
 }
 
 func BenchmarkInfofWithCallerParallel(b *testing.B) {
-	SetOutput(ioutil.Discard)
+	SetOutput(io.Discard)
 	SetFlags(Lfile)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
