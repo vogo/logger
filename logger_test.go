@@ -84,6 +84,16 @@ func BenchmarkInfof(b *testing.B) {
 	}
 }
 
+func BenchmarkInfofParallel(b *testing.B) {
+	SetOutput(io.Discard)
+	SetFlags(Lnone)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Infof("%s %s", "hello", "world")
+		}
+	})
+}
+
 func BenchmarkInfofWithCaller(b *testing.B) {
 	SetOutput(io.Discard)
 	SetFlags(Lfile)

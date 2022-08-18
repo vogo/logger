@@ -25,13 +25,13 @@ func StdLogPrintln(v ...any) {
 }
 
 func TestLog(t *testing.T) {
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
+	log.SetFlags(log.LstdFlags | log.Ldate | log.Lmicroseconds | log.Lshortfile)
 	log.Println("hello world")
 }
 
 func BenchmarkLogPrintln(b *testing.B) {
 	log.SetOutput(io.Discard)
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+	log.SetFlags(log.LstdFlags | log.Ldate | log.Lmicroseconds)
 	for i := 0; i < b.N; i++ {
 		StdLogPrintln("hello world")
 	}
@@ -39,7 +39,7 @@ func BenchmarkLogPrintln(b *testing.B) {
 
 func BenchmarkLogPrintlnParallel(b *testing.B) {
 	log.SetOutput(io.Discard)
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+	log.SetFlags(log.LstdFlags | log.Ldate | log.Lmicroseconds)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			StdLogPrintln("hello world")
@@ -49,7 +49,7 @@ func BenchmarkLogPrintlnParallel(b *testing.B) {
 
 func BenchmarkLogPrintlnCaller(b *testing.B) {
 	log.SetOutput(io.Discard)
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
+	log.SetFlags(log.LstdFlags | log.Ldate | log.Lmicroseconds | log.Lshortfile)
 	for i := 0; i < b.N; i++ {
 		StdLogPrintln("hello world")
 	}
@@ -57,15 +57,25 @@ func BenchmarkLogPrintlnCaller(b *testing.B) {
 
 func BenchmarkLogPrintf(b *testing.B) {
 	log.SetOutput(io.Discard)
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+	log.SetFlags(log.LstdFlags | log.Ldate | log.Lmicroseconds)
 	for i := 0; i < b.N; i++ {
 		StdLogPrintf("%s %s", "hello", "world")
 	}
 }
 
+func BenchmarkLogPrintfParallel(b *testing.B) {
+	log.SetOutput(io.Discard)
+	log.SetFlags(log.LstdFlags | log.Ldate | log.Lmicroseconds)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			StdLogPrintf("%s %s", "hello", "world")
+		}
+	})
+}
+
 func BenchmarkLogPrintfCaller(b *testing.B) {
 	log.SetOutput(io.Discard)
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
+	log.SetFlags(log.LstdFlags | log.Ldate | log.Lmicroseconds | log.Lshortfile)
 	for i := 0; i < b.N; i++ {
 		StdLogPrintf("%s %s", "hello", "world")
 	}
@@ -73,7 +83,7 @@ func BenchmarkLogPrintfCaller(b *testing.B) {
 
 func BenchmarkLogPrintfCallerParallel(b *testing.B) {
 	log.SetOutput(io.Discard)
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
+	log.SetFlags(log.LstdFlags | log.Ldate | log.Lmicroseconds | log.Lshortfile)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			StdLogPrintf("%s %s", "hello", "world")

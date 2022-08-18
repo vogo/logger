@@ -64,123 +64,123 @@ func Writer() io.Writer {
 	return output
 }
 
-func Trace(a ...interface{}) {
+func Trace(a ...any) {
 	if Level < LevelTrace {
 		return
 	}
 	WriteLog(TagTrace, fmt.Sprint(a...))
 }
 
-func Debug(a ...interface{}) {
+func Debug(a ...any) {
 	if Level < LevelDebug {
 		return
 	}
 	WriteLog(TagDebug, fmt.Sprint(a...))
 }
 
-func Info(a ...interface{}) {
+func Info(a ...any) {
 	if Level < LevelInfo {
 		return
 	}
 	WriteLog(TagInfo, fmt.Sprint(a...))
 }
 
-func Warn(a ...interface{}) {
+func Warn(a ...any) {
 	if Level < LevelWarn {
 		return
 	}
 	WriteLog(TagWarn, fmt.Sprint(a...))
 }
 
-func Error(a ...interface{}) {
+func Error(a ...any) {
 	if Level < LevelError {
 		return
 	}
 	WriteLog(TagError, fmt.Sprint(a...))
 }
 
-func Tracef(format string, a ...interface{}) {
+func Tracef(format string, a ...any) {
 	if Level < LevelTrace {
 		return
 	}
 	WriteLog(TagTrace, fmt.Sprintf(format, a...))
 }
 
-func Debugf(format string, a ...interface{}) {
+func Debugf(format string, a ...any) {
 	if Level < LevelDebug {
 		return
 	}
 	WriteLog(TagDebug, fmt.Sprintf(format, a...))
 }
 
-func Infof(format string, a ...interface{}) {
+func Infof(format string, a ...any) {
 	if Level < LevelInfo {
 		return
 	}
 	WriteLog(TagInfo, fmt.Sprintf(format, a...))
 }
 
-func Warnf(format string, a ...interface{}) {
+func Warnf(format string, a ...any) {
 	if Level < LevelWarn {
 		return
 	}
 	WriteLog(TagWarn, fmt.Sprintf(format, a...))
 }
 
-func Errorf(format string, a ...interface{}) {
+func Errorf(format string, a ...any) {
 	if Level < LevelError {
 		return
 	}
 	WriteLog(TagError, fmt.Sprintf(format, a...))
 }
 
-func Fatal(a ...interface{}) {
+func Fatal(a ...any) {
 	WriteLog(TagFatal, fmt.Sprint(a...))
 	os.Exit(1)
 }
 
-func Fatalf(format string, a ...interface{}) {
+func Fatalf(format string, a ...any) {
 	WriteLog(TagFatal, fmt.Sprintf(format, a...))
 	os.Exit(1)
 }
 
-func Fatalln(a ...interface{}) {
+func Fatalln(a ...any) {
 	WriteLog(TagFatal, fmt.Sprint(a...))
 	os.Exit(1)
 }
 
-func Print(a ...interface{}) {
+func Print(a ...any) {
 	WriteLog(TagPrint, fmt.Sprint(a...))
 }
 
-func Printf(format string, a ...interface{}) {
+func Printf(format string, a ...any) {
 	WriteLog(TagPrint, fmt.Sprintf(format, a...))
 }
 
-func Println(format string, a ...interface{}) {
+func Println(format string, a ...any) {
 	WriteLog(TagPrint, fmt.Sprintf(format, a...))
 }
 
-func Panic(a ...interface{}) {
+func Panic(a ...any) {
 	s := fmt.Sprint(a...)
 	WriteLog(TagPanic, s)
 	panic(s)
 }
 
-func Panicf(format string, a ...interface{}) {
+func Panicf(format string, a ...any) {
 	s := fmt.Sprintf(format, a...)
 	WriteLog(TagPanic, s)
 	panic(s)
 }
 
-func Panicln(a ...interface{}) {
+func Panicln(a ...any) {
 	s := fmt.Sprint(a...)
 	WriteLog(TagPanic, s)
 	panic(s)
 }
 
 var (
-	bytesPool = sync.Pool{New: func() interface{} {
+	bytesPool = sync.Pool{New: func() any {
 		b := make([]byte, 1024)
 		return &b
 	}}
@@ -188,42 +188,33 @@ var (
 
 // WriteLog write log data
 func WriteLog(tag, s string) {
-	var (
-		pc       uintptr
-		fileName string
-		funcName string
-		line     int
-		callerOk bool
-		buf      []byte
-	)
-
 	t := time.Now()
 
-	buf = (*(bytesPool.Get().(*[]byte)))[:0]
+	buf := bytesPool.Get().(*[]byte)
 
 	year, month, day := t.Date()
-	appendNumber(&buf, year, 4)
-	buf = append(buf, '/')
-	appendNumber(&buf, int(month), 2)
-	buf = append(buf, '/')
-	appendNumber(&buf, day, 2)
-	buf = append(buf, ' ')
+	appendNumber(buf, year, 4)
+	*buf = append(*buf, '/')
+	appendNumber(buf, int(month), 2)
+	*buf = append(*buf, '/')
+	appendNumber(buf, day, 2)
+	*buf = append(*buf, ' ')
 
 	hour, min, sec := t.Clock()
-	appendNumber(&buf, hour, 2)
-	buf = append(buf, ':')
-	appendNumber(&buf, min, 2)
-	buf = append(buf, ':')
-	appendNumber(&buf, sec, 2)
-	buf = append(buf, '.')
-	appendNumber(&buf, t.Nanosecond()/1e6, 3)
+	appendNumber(buf, hour, 2)
+	*buf = append(*buf, ':')
+	appendNumber(buf, min, 2)
+	*buf = append(*buf, ':')
+	appendNumber(buf, sec, 2)
+	*buf = append(*buf, '.')
+	appendNumber(buf, t.Nanosecond()/1e6, 3)
 
-	buf = append(buf, ' ')
-	buf = append(buf, tag...)
+	*buf = append(*buf, ' ')
+	*buf = append(*buf, tag...)
 
 	if flag&Lfile != 0 {
-		buf = append(buf, ' ', '[')
-		pc, fileName, line, callerOk = runtime.Caller(2)
+		*buf = append(*buf, ' ', '[')
+		pc, fileName, line, callerOk := runtime.Caller(2)
 		if callerOk {
 			for i := len(fileName) - 1; i > 0; i-- {
 				if fileName[i] == '/' {
@@ -231,9 +222,9 @@ func WriteLog(tag, s string) {
 					break
 				}
 			}
-			buf = append(buf, fileName...)
+			*buf = append(*buf, fileName...)
 			if flag&Lfunc != 0 {
-				funcName = runtime.FuncForPC(pc).Name() // main.(*MyStruct).foo
+				funcName := runtime.FuncForPC(pc).Name() // main.(*MyStruct).foo
 
 				for i := len(funcName) - 1; i > 0; i-- {
 					if funcName[i] == '.' {
@@ -242,27 +233,28 @@ func WriteLog(tag, s string) {
 					}
 				}
 
-				buf = append(buf, ':')
-				buf = append(buf, funcName...)
+				*buf = append(*buf, ':')
+				*buf = append(*buf, funcName...)
 			}
-			buf = append(buf, ':')
-			appendNumber(&buf, line, -1)
+			*buf = append(*buf, ':')
+			appendNumber(buf, line, -1)
 		} else {
-			buf = append(buf, '?')
+			*buf = append(*buf, '?')
 		}
 
-		buf = append(buf, ']')
+		*buf = append(*buf, ']')
 	}
 
-	buf = append(buf, ' ')
-	buf = append(buf, s...)
+	*buf = append(*buf, ' ')
+	*buf = append(*buf, s...)
 	if s == "" || s[len(s)-1] != '\n' {
-		buf = append(buf, '\n')
+		*buf = append(*buf, '\n')
 	}
 
-	_, _ = output.Write(buf)
+	_, _ = output.Write(*buf)
 
-	bytesPool.Put(&buf)
+	*buf = (*buf)[:0]
+	bytesPool.Put(buf)
 }
 
 // Cheap integer to fixed-width decimal ASCII. Give a negative width to avoid zero-padding.
